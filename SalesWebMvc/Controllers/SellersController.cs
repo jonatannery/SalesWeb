@@ -37,5 +37,26 @@ namespace SalesWebMvc.Controllers
             _sellerService.Insert(seller);// chama o método Insert do SellerService para inserir o novo vendedor no banco de dados
             return RedirectToAction(nameof(Index));// redireciona para a ação Index após a criação do vendedor
         }
+        public IActionResult Delete(int? id)// ação Delete é responsável por lidar com a exclusão de um vendedor. Ela recebe um parâmetro id que representa o identificador do vendedor a ser excluído. O método chama o método Remove do SellerService para remover o vendedor do banco de dados e, em seguida, redireciona para a ação Index.
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+            var obj = _sellerService.FindById(id.Value);// chama o método FindById do SellerService para buscar o vendedor pelo id
+            if (obj == null)
+            {
+                return NotFound();
+            }
+            return View(obj);// retorna a view de confirmação de exclusão, passando o objeto do vendedor para exibição
+
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+            _sellerService.Remove(id);
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
