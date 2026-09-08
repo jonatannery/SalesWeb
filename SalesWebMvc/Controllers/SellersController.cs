@@ -40,6 +40,10 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]// atributo que indica que o método Create é responsável por lidar com requisições HTTP POST e que a validação do token antifalsificação deve ser aplicada para proteger contra ataques CSRF (Cross-Site Request Forgery).
         public IActionResult Create(Seller seller)// ação Create é responsável por lidar com a criação de um novo vendedor. Ela recebe um objeto Seller como parâmetro, que contém os dados do vendedor a ser criado. O método chama o método Insert do SellerService para inserir o novo vendedor no banco de dados e, em seguida, redireciona para a ação Index.
         {
+            if (!ModelState.IsValid)
+            {
+                return View(seller);
+            }
             _sellerService.Insert(seller);// chama o método Insert do SellerService para inserir o novo vendedor no banco de dados
             return RedirectToAction(nameof(Index));// redireciona para a ação Index após a criação do vendedor
         }
@@ -80,6 +84,8 @@ namespace SalesWebMvc.Controllers
         }
         public IActionResult Edit(int? id)
         {
+
+
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
@@ -98,6 +104,10 @@ namespace SalesWebMvc.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(int id, Seller seller)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(seller);
+            }
             if (id != seller.Id)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
