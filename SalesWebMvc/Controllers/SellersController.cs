@@ -20,40 +20,41 @@ namespace SalesWebMvc.Controllers
             _departmentService = departmentService;
         }
 
-        public IActionResult Index()// ação Index é responsável por lidar com as requisições para a página inicial dos vendedores. Ela chama o método FindAll do SellerService para obter a lista de vendedores e, em seguida, retorna essa lista para a view correspondente.
+        public async Task<IActionResult> Index()// ação Index é responsável por lidar com as requisições para a página inicial dos vendedores. Ela chama o método FindAll do SellerService para obter a lista de vendedores e, em seguida, retorna essa lista para a view correspondente.
         {
-            var list = _sellerService.FindAll(); // Call the FindAll method from the SellerService to get the list of sellers
+            var list = await _sellerService.FindAllAsync(); // Call the FindAll method from the SellerService to get the list of sellers
                                                  // A operação retorna uma lista de vendedores, que é então passada para a view para exibição.
 
             return View(list);// passar alista de vendedores para a view
         }
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var departments = _departmentService.FindAll();// chama o método FindAll do DepartmentService para obter a lista de departamentos
+            var departments =  await _departmentService.FindAllAsync();// chama o método FindAll do DepartmentService para obter a lista de departamentos
             var viewModel = new SellerFormViewModel { Departments = departments };// cria uma instância de SellerFormViewModel e atribui a lista de departamentos obtida ao atributo Departments do view ;model
             return View(viewModel);
-
 
         }
 
         [HttpPost]// atributo que indica que o método Create é responsável por lidar com requisições HTTP POST.
         [ValidateAntiForgeryToken]// atributo que indica que o método Create é responsável por lidar com requisições HTTP POST e que a validação do token antifalsificação deve ser aplicada para proteger contra ataques CSRF (Cross-Site Request Forgery).
-        public IActionResult Create(Seller seller)// ação Create é responsável por lidar com a criação de um novo vendedor. Ela recebe um objeto Seller como parâmetro, que contém os dados do vendedor a ser criado. O método chama o método Insert do SellerService para inserir o novo vendedor no banco de dados e, em seguida, redireciona para a ação Index.
+        public async Task <IActionResult> Create(Seller seller)// ação Create é responsável por lidar com a criação de um novo vendedor. Ela recebe um objeto Seller como parâmetro, que contém os dados do vendedor a ser criado. O método chama o método Insert do SellerService para inserir o novo vendedor no banco de dados e, em seguida, redireciona para a ação Index.
         {
-            if (!ModelState.IsValid)
+            if(!ModelState.IsValid)
             {
-                return View(seller);
+                var departments = await _departmentService.FindAllAsync();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
             }
-            _sellerService.Insert(seller);// chama o método Insert do SellerService para inserir o novo vendedor no banco de dados
+            await _sellerService.InsertAsync(seller);// chama o método Insert do SellerService para inserir o novo vendedor no banco de dados
             return RedirectToAction(nameof(Index));// redireciona para a ação Index após a criação do vendedor
         }
-        public IActionResult Delete(int? id)// ação Delete é responsável por lidar com a exclusão de um vendedor. Ela recebe um parâmetro id que representa o identificador do vendedor a ser excluído. O método chama o método Remove do SellerService para remover o vendedor do banco de dados e, em seguida, redireciona para a ação Index.
+        public async Task<IActionResult> Delete(int? id)// ação Delete é responsável por lidar com a exclusão de um vendedor. Ela recebe um parâmetro id que representa o identificador do vendedor a ser excluído. O método chama o método Remove do SellerService para remover o vendedor do banco de dados e, em seguida, redireciona para a ação Index.
         {
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new {message="Id not provided"});
             }
-            var obj = _sellerService.FindById(id.Value);// chama o método FindById do SellerService para buscar o vendedor pelo id
+            var obj = await _sellerService.FindByIdAsync(id.Value);// chama o método FindById do SellerService para buscar o vendedor pelo id
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
@@ -63,18 +64,18 @@ namespace SalesWebMvc.Controllers
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task <IActionResult> Delete(int id)
         {
-            _sellerService.Remove(id);
+            await  _sellerService.RemoveAsync(id);
             return RedirectToAction(nameof(Index));
         }
-        public IActionResult Details (int? id)
+        public async Task <IActionResult> Details (int? id)
         {
             if (id == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
@@ -82,7 +83,7 @@ namespace SalesWebMvc.Controllers
             return View(obj);
 
         }
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
 
 
@@ -90,23 +91,25 @@ namespace SalesWebMvc.Controllers
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
                 return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
-            List<Department> departments = _departmentService.FindAll();
+            List<Department> departments = await _departmentService.FindAllAsync();
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
             return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(int id, Seller seller)
+        public async Task<IActionResult> Edit(int id, Seller seller)
         {
             if (!ModelState.IsValid)
             {
-                return View(seller);
+                var departments = await _departmentService.FindAllAsync();
+                var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
+                return View(viewModel);
             }
             if (id != seller.Id)
             {
@@ -114,7 +117,7 @@ namespace SalesWebMvc.Controllers
             }
             try { 
 
-            _sellerService.Update(seller);
+            await _sellerService.UpdateAsync(seller);
 
             return RedirectToAction(nameof(Index));
             }
