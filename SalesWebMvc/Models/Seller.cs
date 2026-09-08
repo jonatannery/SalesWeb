@@ -1,14 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 namespace SalesWebMvc.Models
 {
     public class Seller
     {
         public int Id { get; set; }
-        public string Name { get; set; } 
+        public string Name { get; set; }
+
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
+
+        [Display(Name = "Birth Date")]// este atributo é usado para espaçamento e exibir o nome do campo na view
+        [DataType(DataType.Date)]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
         public DateTime BirthDate { get; set; }
+
+        [Display(Name = "Base Salary")]// este atributo é para espaçamento e exibir o nome do campo na view
+        [DisplayFormat(DataFormatString = "{0:F2}")]// este atributo é para formatar o valor do campo em 2 casas decimais
         public double BaseSalary { get; set; }
 
         public Department Department { get; set; }
